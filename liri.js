@@ -21,8 +21,7 @@ var movies = 'movie';
 console.log("\r\n" + "Type one of the following commands" + "\r\n" +
     "1. Tweets " + "\r\n" +
     "2. spotify " + "\r\n" +
-    "3. movie 'any movie name' " + "\r\n" +
-    "Be sure to put the movie or song name in quotation marks if it's more than one word.");
+    "3. movie " + "\r\n");
 
 inquirer.prompt([{
         type: "input",
