@@ -4,8 +4,9 @@ var twitterKeys = keys.twitterKeys;
 
 var request = require('request');
 var Twitter = require('twitter');
-var Spotify = require('node-spotify-api');
-var prompt = require('prompt');
+/*var Spotify = require('node-spotify-api');*/
+
+/*var prompt = require('prompt');*/
 var inquirer = require('inquirer');
 
 // //takes in the user input that calls the option you want
@@ -14,13 +15,13 @@ var input = '';
 
 //options that the user can choose from
 var myTweets = 'Tweets';
-var songs = 'spotify-this-song';
-var movies = 'movie-this';
+var songs = 'spotify';
+var movies = 'movie';
 
 console.log("\r\n" + "Type one of the following commands" + "\r\n" +
     "1. Tweets " + "\r\n" +
-    "2. spotify-this-song 'any song name' " + "\r\n" +
-    "3. movie-this 'any movie name' " + "\r\n" +
+    "2. spotify " + "\r\n" +
+    "3. movie 'any movie name' " + "\r\n" +
     "Be sure to put the movie or song name in quotation marks if it's more than one word.");
 
 inquirer.prompt([{
@@ -34,20 +35,47 @@ inquirer.prompt([{
     input = user.decision;
     if (input === myTweets) {
         getTweets();
+    } else if (input === movies) {
+
+        getMovie();
+    } else if (input === songs) {
+
+        getSong();
     }
-    (input === movies)
-    getMovie();
 });
 
 
 
+//==============   SPOTIFY FUNCTION   =================//
+var getSong = function() {
+    var Spotify = require('node-spotify-api');
+
+    var spotify = new Spotify({
+        id: "026708b47b8d469d87e82ed606cf766a",
+        secret: "eef39c318d2349dc90d4f7311f1f591c",
+    });
+
+    spotify.search({ type: 'track', query: 'All the Small Things' }, function(err, data) {
+        if (err) {
+            return console.log('Error occurred: ' + err);
+        }
+
+        console.log("*************************************************")
+            // console.log("DATA: " + data.tracks.items[1]);
+        console.log("Artist: " + data.tracks.items[1].artists[0].name);
+        console.log("Song Name: " + data.tracks.items[1].name);
+        console.log("Album: " + data.tracks.items[1].album.name);
+        console.log("Link: " + data.tracks.items[1].href);
+        console.log("*************************************************")
+    });
+}
 
 
 
 //==============   TWITTER FUNCTION   =================//
 var getTweets = function() {
-    var client = new Twitter(twitterKeys);
-    console.log('things!!!');
+    /*var client = new Twitter(twitterKeys);*/
+    var client = new Twitter(keys);
 
     var params = {
         screen_name: "PhilKappaz",
@@ -55,21 +83,13 @@ var getTweets = function() {
     }
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
         if (!error) {
-            console.log('err');
-            var data = []; //empty array to hold data
+
             for (var i = 0; i < tweets.length; i++) {
-                data.push({
-                    'created at: ': tweets[i].created_at,
-                    'Tweets: ': tweets[i].text,
-                });
 
-                //this creates the variable tdate which will store the result of the date from the twitter call for easier access later
-                var tDate = new Date(tweets[tweet].created_at);
-
-                //console.log all of the tweets organizing them by tweet# followed by the date of the tweet and finally the text of the tweet itself
-                console.log("Tweet #: " + (parseInt(tweet) + 1) + " ");
+                var tDate = new Date(tweets[i].created_at);
+                console.log("Tweet #: " + (i + 1) + " ");
                 console.log(tDate.toString().slice(0, 24) + " ");
-                console.log(tweets[tweet].text);
+                console.log(tweets[i].text);
                 console.log("\n");
 
             }
@@ -88,20 +108,17 @@ var getMovie = function() {
     var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
     request(queryUrl, function(e, resp, data) {
         if (!e && resp.statusCode === 200) {
-            console.log("This movie was released in: " + JSON.parse(data).Year);
+
+            console.log("*************************************************")
+            console.log("Title: " + JSON.parse(data).Title);
+            console.log("Year: " + JSON.parse(data).Year);
+            console.log("IMDB Rating: " + JSON.parse(data).imdbRating);
+            console.log("Rotten Tomatoes Rating: " + JSON.parse(data).tomatoRating);
+            console.log("Country: " + JSON.parse(data).Country);
+            console.log("Language: " + JSON.parse(data).Language);
+            console.log("Plot: " + JSON.parse(data).Plot);
+            console.log("Actors: " + JSON.parse(data).Actors);
+            console.log("*************************************************")
         }
     });
-    // This line is just to help us debug against the actual URL.
-    console.log(queryUrl);
 }
-
-
-
-
-
-
-
-// my - tweets
-// spotify - this - song
-// movie - this
-// do -what - it - says
