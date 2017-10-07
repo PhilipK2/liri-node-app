@@ -1,60 +1,49 @@
 var keys = require('./keys.js');
 var twitterKeys = keys.twitterKeys;
 
-
+var fs = require('fs');
 var request = require('request');
 var Twitter = require('twitter');
-/*var Spotify = require('node-spotify-api');*/
-
-/*var prompt = require('prompt');*/
+var Spotify = require('node-spotify-api');
 var inquirer = require('inquirer');
+var liriArgument = process.argv[2];
 
-// //takes in the user input that calls the option you want
-var input = '';
-
-
-//options that the user can choose from
-var myTweets = 'Tweets';
-var songs = 'spotify';
-var movies = 'movie';
-
-console.log("\r\n" + "Type one of the following commands" + "\r\n" +
-    "1. Tweets " + "\r\n" +
-    "2. spotify " + "\r\n" +
-    "3. movie " + "\r\n");
-
-inquirer.prompt([{
-        type: "input",
-        name: "decision",
-        message: "What will you do?!"
-    }
-
-
-]).then(function(user) {
-    input = user.decision;
-    if (input === myTweets) {
-        getTweets();
-    } else if (input === movies) {
-
-        getMovie();
-    } else if (input === songs) {
-
+switch (liriArgument) {
+    case "tweets":
+        findTweets();
+        break;
+    case "spotify":
         getSong();
-    }
-});
+        break;
+    case "movie":
+        findMovie();
+        break;
+    case "do-what-it-says":
+        doWhatItSays();
+        break;
+    default:
+        console.log("\r\n" + "Try typing one of the following commands after 'node liri.js' : " + "\r\n" +
+            "1. tweets " + "\r\n" +
+            "2. spotify 'any song name' " + "\r\n" +
+            "3. movie 'any movie name' " + "\r\n" +
+            "4. do-what-it-says." + "\r\n");
+};
 
 
 
 //==============   SPOTIFY FUNCTION   =================//
-var getSong = function() {
+function getSong(songName) {
+    var songName = process.argv[3];
     var Spotify = require('node-spotify-api');
-
     var spotify = new Spotify({
         id: "026708b47b8d469d87e82ed606cf766a",
         secret: "eef39c318d2349dc90d4f7311f1f591c",
     });
 
-    spotify.search({ type: 'track', query: 'All the Small Things' }, function(err, data) {
+    if (!songName) {
+        songName = "The Sign";
+    }
+    spotify.search({ type: 'track', query: songName }, function(err, data) {
         if (err) {
             return console.log('Error occurred: ' + err);
         }
@@ -70,12 +59,9 @@ var getSong = function() {
 }
 
 
-
 //==============   TWITTER FUNCTION   =================//
-var getTweets = function() {
-    /*var client = new Twitter(twitterKeys);*/
+function findTweets() {
     var client = new Twitter(keys);
-
     var params = {
         screen_name: "PhilKappaz",
         count: '20',
@@ -95,16 +81,17 @@ var getTweets = function() {
 
         }
     })
-}
+};
 
 //==============   MOVIE FUNCTION   =================//
-var getMovie = function() {
+function findMovie() {
     var request = require('request');
-    // Grab or assemble the movie name and store it in a variable called "movieName"
-    var movieName = "fargo";
+    var movie = process.argv[3];
+    if (!movie) {
+        movie = "mr nobody";
+    }
 
-    // Then run a request to the OMDB API with the movie specified
-    var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=40e9cece";
+    var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=40e9cece";
     request(queryUrl, function(e, resp, data) {
         if (!e && resp.statusCode === 200) {
 
@@ -121,3 +108,14 @@ var getMovie = function() {
         }
     });
 }
+
+//==============   DO WHAT IT SAYS FUNCTION   =================//
+function doWhatItSays() {
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if (!error) {
+            doWhatItSaysResult = data.split(",");
+            getSong(doWhatItSaysResult[0], doWhatItSaysResult[1]);
+            console.log(doWhatItSaysResult);
+        }
+    });
+};
